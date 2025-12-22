@@ -34,15 +34,15 @@ jobs:
       matrix:
         include:
           - platform: x86_64
-            url_sdk: https://downloads.openwrt.org/releases/24.10.4/targets/x86/64/openwrt-sdk-24.10.4-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+            url_sdk: https://downloads.openwrt.org/releases/24.10.5/targets/x86/64/openwrt-sdk-24.10.5-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
             sdk_ver: "24.10"
 
           - platform: aarch64_cortex-a53
-            url_sdk: https://downloads.openwrt.org/releases/24.10.4/targets/qualcommax/ipq807x/openwrt-sdk-24.10.4-qualcommax-ipq807x_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+            url_sdk: https://downloads.openwrt.org/releases/24.10.5/targets/qualcommax/ipq807x/openwrt-sdk-24.10.5-qualcommax-ipq807x_gcc-13.3.0_musl.Linux-x86_64.tar.zst
             sdk_ver: "24.10"
 
           - platform: arm_cortex-a7_neon-vfpv4
-            url_sdk: https://downloads.openwrt.org/releases/24.10.4/targets/ipq40xx/generic/openwrt-sdk-24.10.4-ipq40xx-generic_gcc-13.3.0_musl_eabi.Linux-x86_64.tar.zst
+            url_sdk: https://downloads.openwrt.org/releases/24.10.5/targets/ipq40xx/generic/openwrt-sdk-24.10.5-ipq40xx-generic_gcc-13.3.0_musl_eabi.Linux-x86_64.tar.zst
             sdk_ver: "24.10"
 
     steps:

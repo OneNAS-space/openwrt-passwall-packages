@@ -28,7 +28,7 @@ env:
 jobs:
   job_auto_compile:
     runs-on: ubuntu-latest
-    name: Matrix build (${{ matrix.platform }})
+    name: Matrix build (${{ matrix.sdk_ver}})/(${{ matrix.platform }})
     strategy:
       fail-fast: false
       matrix:

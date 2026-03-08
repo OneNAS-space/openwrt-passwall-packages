@@ -166,13 +166,13 @@ jobs:
         echo "Patch application completed"
         #--------------------------------------end_patches--------------------------------------------
 
-    - name: Fix package conflict
-      run: |
-        cd sdk
-        rm -rf feeds/packages/net/xray-core
-        ./scripts/feeds install -f -p passwall_packages xray-core
-        echo "Checking xray-core path:"
-        find feeds/ -name Makefile | grep xray-core
+#    - name: Fix package conflict
+#      run: |
+#        cd sdk
+#        rm -rf feeds/packages/net/xray-core
+#        ./scripts/feeds install -f -p passwall_packages xray-core
+#        echo "Checking xray-core path:"
+#        find feeds/ -name Makefile | grep xray-core
 
     - name: Generate minimal .config
       run: |
@@ -279,7 +279,6 @@ jobs:
             tcping
             tuic-client
             v2ray-plugin
-            Xray-core
           )
           echo "Building packages: ${PKGS[*]}"
           for PKG in "${PKGS[@]}"; do

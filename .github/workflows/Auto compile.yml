@@ -341,7 +341,7 @@ jobs:
             dir_name=$(basename $(dirname "$f")) # 得到 "25.12-x86_64"
             sdk_ver=$(echo "$dir_name" | cut -d- -f1)
             platform=$(echo "$dir_name" | cut -d- -f2-)
-            dest_dir="custom-packages/releases/packages-$sdk_ver/$platform"
+            dest_dir="custom-packages/releases/packages-$sdk_ver/$platform/packages"
             mkdir -p "$dest_dir"
             if [[ "$base" == *.ipk ]]; then
               pkgname=$(echo "$base" | cut -d_ -f1)

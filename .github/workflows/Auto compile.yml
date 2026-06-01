@@ -120,7 +120,7 @@ jobs:
         cd sdk
           
     - name: SSH connection to Actions
-      uses: mxschmitt/action-tmate@v3.23
+      uses: mxschmitt/action-tmate@v3.24
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh != 'false') || contains(github.event.action, 'ssh')
 
     - name: Configure feeds and apply patches

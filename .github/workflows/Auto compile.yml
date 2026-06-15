@@ -34,15 +34,6 @@ jobs:
       matrix:
         include:
           - platform: x86_64
-            url_sdk: https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-            sdk_ver: "24.10"
-          - platform: aarch64_cortex-a53
-            url_sdk: https://downloads.openwrt.org/releases/24.10.6/targets/qualcommax/ipq807x/openwrt-sdk-24.10.6-qualcommax-ipq807x_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-            sdk_ver: "24.10"
-          - platform: arm_cortex-a7_neon-vfpv4
-            url_sdk: https://downloads.openwrt.org/releases/24.10.6/targets/ipq40xx/generic/openwrt-sdk-24.10.6-ipq40xx-generic_gcc-13.3.0_musl_eabi.Linux-x86_64.tar.zst
-            sdk_ver: "24.10"
-          - platform: x86_64
             url_sdk: https://downloads.openwrt.org/releases/25.12.4/targets/x86/64/openwrt-sdk-25.12.4-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst
             sdk_ver: "25.12"
           - platform: aarch64_cortex-a53
@@ -108,17 +99,9 @@ jobs:
         file_name=$(echo ${{matrix.url_sdk}} | awk -F/ '{print $NF}')
         mkdir -p sdk
         find sdk -mindepth 1 -maxdepth 1 ! -name dl -exec rm -rf {} +
-
-        if [[ $file_name == *.tar.xz ]]; then
-          tar -xJf $file_name -C ./sdk --strip-components=1
-        elif [[ $file_name == *.tar.zst ]]; then
-          tar --zstd -x -f $file_name -C ./sdk --strip-components=1
-        else
-          echo "Unsupported file format: $file_name"
-          exit 1
-         fi
+        tar --zstd -x -f $file_name -C ./sdk --strip-components=1
         cd sdk
-          
+
     - name: SSH connection to Actions
       uses: mxschmitt/action-tmate@v3.24
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh != 'false') || contains(github.event.action, 'ssh')
@@ -141,7 +124,6 @@ jobs:
 
         #--------------------------------------begin_patches------------------------------------------
         echo "Start applying the patch"
-
         rm -rf temp_resp
         git clone -b master --single-branch https://github.com/openwrt/packages.git temp_resp
         echo "update golang version"
@@ -158,21 +140,12 @@ jobs:
         
         echo "fixed rust host build error"
         sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' feeds/packages/lang/rust/Makefile
-        grep -q -- '--ci false \\' feeds/packages/lang/rust/Makefile || sed -i '/x\.py \\/a \        --ci false \\' feeds/packages/lang/rust/Makefile
+        grep -q -- '--ci false \\' feeds/packages/lang/rust/Makefile || sed -i '/x\.py \\/a \      --ci false \\' feeds/packages/lang/rust/Makefile
 
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-        
         echo "Patch application completed"
         #--------------------------------------end_patches--------------------------------------------
-
-#    - name: Fix package conflict
-#      run: |
-#        cd sdk
-#        rm -rf feeds/packages/net/xray-core
-#        ./scripts/feeds install -f -p passwall_packages xray-core
-#        echo "Checking xray-core path:"
-#        find feeds/ -name Makefile | grep xray-core
 
     - name: Generate minimal .config
       run: |
@@ -219,10 +192,9 @@ jobs:
         fi
 
     - name: Select packages into .config (all mode with whitelist)
-      if: env.MODE== 'all'
+      if: env.MODE == 'all'
       run: |
         cd sdk
-
         echo "CONFIG_PACKAGE_luci-app-passwall2=m" >> .config
         echo "CONFIG_PACKAGE_luci-app-passwall2_Iptables_Transparent_Proxy=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y" >> .config
@@ -240,17 +212,9 @@ jobs:
         echo "CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_tuic_client=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_V2ray_Plugin=y" >> .config
-
         make defconfig
 
-        COUNT=$(grep -c '^CONFIG_PACKAGE_' .config || true)
-        echo "Final package count: $COUNT"
-        if [ "$COUNT" -eq 0 ]; then
-          echo "❌ No packages selected in all-mode, aborting build."
-          exit 1
-        fi
-
-    - name: ${{ matrix.platform }} download
+    - name: Download sources
       run: |
         cd sdk
         make download -j$(nproc)
@@ -262,27 +226,15 @@ jobs:
         if [ "${MODE}" = "changed" ] && [ -n "$CHANGED_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$CHANGED_DIRS"
           for DIR in "${DIRS[@]}"; do
-            echo "Compiling DIR: $DIR"
             make package/$DIR/{clean,compile} -j$(nproc) V=s
           done
         else
           PKGS=(
-            chinadns-ng
-            geoview
-            hysteria
-            naiveproxy
-            shadowsocks-libev
-            shadowsocks-rust
-            shadowsocksr-libev
-            simple-obfs
-            sing-box
-            tcping
-            tuic-client
-            v2ray-plugin
+            chinadns-ng geoview hysteria naiveproxy shadowsocks-libev 
+            shadowsocks-rust shadowsocksr-libev simple-obfs sing-box 
+            tcping tuic-client v2ray-plugin
           )
-          echo "Building packages: ${PKGS[*]}"
           for PKG in "${PKGS[@]}"; do
-            echo ">>> Building $PKG"
             make package/$PKG/{clean,compile} -j$(nproc) V=s
           done
         fi
@@ -291,19 +243,11 @@ jobs:
       run: |
         DEST_DIR="staging/${{ matrix.sdk_ver }}/${{ matrix.platform }}"
         mkdir -p "$DEST_DIR"
-        find $GITHUB_WORKSPACE/sdk/bin/packages/*/passwall_packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) | while read -r f; do
+        find $GITHUB_WORKSPACE/sdk/bin/packages/*/passwall_packages/ -type f -name "*.apk" | while read -r f; do
           base=$(basename "$f")
-          
-          if [[ "$base" == *.ipk ]]; then
-            pkgname=$(echo "$base" | cut -d_ -f1)
-            standard_name="$base"
-          else
-            pkgname=$(echo "$base" | sed -E 's/-[0-9].*//')
-            standard_name=$(echo "$base" | sed "s/-${{ matrix.platform }}\.apk$/\.apk/")
-          fi
-
+          pkgname=$(echo "$base" | sed -E 's/-[0-9].*//')
+          standard_name=$(echo "$base" | sed "s/-${{ matrix.platform }}\.apk$/\.apk/")
           echo "✅ Collecting: $pkgname (as $standard_name)"
-          
           rm -f "$DEST_DIR/${pkgname}"*
           cp -v "$f" "$DEST_DIR/$standard_name"
         done
@@ -335,21 +279,15 @@ jobs:
       - name: 🚚 Consolidate into Repo
         run: |
           set -euo pipefail
-
-          find ./artifacts -type f \( -name "*.ipk" -o -name "*.apk" \) | while read -r f; do
+          find ./artifacts -type f -name "*.apk" | while read -r f; do
             base=$(basename "$f")
-            dir_name=$(basename $(dirname "$f")) # 得到 "25.12-x86_64"
+            dir_name=$(basename $(dirname "$f"))
             sdk_ver=$(echo "$dir_name" | cut -d- -f1)
             platform=$(echo "$dir_name" | cut -d- -f2-)
             dest_dir="custom-packages/releases/packages-$sdk_ver/$platform/packages"
             mkdir -p "$dest_dir"
-            if [[ "$base" == *.ipk ]]; then
-              pkgname=$(echo "$base" | cut -d_ -f1)
-              rm -f "$dest_dir/${pkgname}"_*.ipk
-            else
-              pkgname=$(echo "$base" | sed -E 's/-[0-9].*//')
-              rm -f "$dest_dir/${pkgname}"-*.apk
-            fi
+            pkgname=$(echo "$base" | sed -E 's/-[0-9].*//')
+            rm -f "$dest_dir/${pkgname}"-*.apk
             cp -v "$f" "$dest_dir/"
           done
 
@@ -363,18 +301,12 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-
           git commit -m "Auto update: ${{ github.repository }} - $(date +'%Y-%m-%d %H:%M:%S')"
-          
           for i in {1..5}; do
-            echo "Attempt $i: Pushing to custom-packages..."
             if git pull --rebase origin main && git push origin main; then
               echo "✅ Push successful!"
               exit 0
             fi
-            echo "⚠️ Conflict or Network error, retrying in 5s..."
             sleep 5
           done
-          
-          echo "❌ Failed to push after 5 attempts."
           exit 1

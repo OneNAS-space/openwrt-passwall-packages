@@ -265,7 +265,7 @@ jobs:
       contents: write
     steps:
       - name: 🔑 Checkout custom-packages
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: OneNAS-space/custom-packages
           token: ${{ secrets.CUSTOM_PACKAGES_TOKEN }}

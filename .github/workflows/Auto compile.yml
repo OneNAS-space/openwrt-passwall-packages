@@ -88,7 +88,7 @@ jobs:
         sudo -E apt-get -qq clean
 
     - name: Cache OpenWrt dl
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: sdk/dl
         key: ${{ runner.os }}-openwrt-${{ matrix.sdk_ver }}-${{ matrix.platform }}

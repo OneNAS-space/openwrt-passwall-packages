@@ -99,6 +99,11 @@ jobs:
           ${{ matrix.sdk_tag }} \
           /workspace/.github/scripts/build-passwall-packages.sh
 
+    - name: Fix dl cache permissions
+      if: always()
+      run: |
+        sudo chown -R "$(id -u):$(id -g)" dl || true
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:

@@ -84,7 +84,7 @@ jobs:
     - name: Build in OpenWrt SDK Container
       run: |
         mkdir -p dl "staging/${{ matrix.sdk_ver }}/${{ matrix.platform }}"
-        chmod 777 dl "staging/${{ matrix.sdk_ver }}/${{ matrix.platform }}"
+        sudo chmod -R 777 dl "staging/${{ matrix.sdk_ver }}/${{ matrix.platform }}"
         chmod +x .github/scripts/build-passwall-packages.sh
 
         docker run --rm \

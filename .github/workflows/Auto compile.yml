@@ -13,10 +13,16 @@ on:
     paths-ignore:
       - '**.md'
       - '.github/**'
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
   pull_request:
     paths-ignore:
       - '**.md'
       - '.github/**'
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
 
 env:

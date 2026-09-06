@@ -53,6 +53,10 @@ grep -q -- '--ci false \\' feeds/packages/lang/rust/Makefile || sed -i '/x\.py \
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+
+echo "Remove nginx to bypass recursive dependency bug"
+rm -rf feeds/packages/net/nginx
+rm -rf feeds/packages/net/nginx-util
 echo "::endgroup::"
 
 echo "::group::3. Generate .config"
@@ -127,7 +131,11 @@ echo "::group::5. Build packages"
 if [ "$MODE" = "changed" ] && [ -n "$CHANGED_DIRS" ]; then
   IFS=',' read -ra DIRS <<< "$CHANGED_DIRS"
   for DIR in "${DIRS[@]}"; do
-    make package/"$DIR"/{clean,compile} -j"$(nproc)" V=s
+    if [ -f "feeds/passwall_packages/$DIR/Makefile" ]; then
+      make package/"$DIR"/{clean,compile} -j"$(nproc)" V=s
+    else
+      echo "⚠️ Skip invalid package directory: $DIR"
+    fi
   done
 else
   PKGS=(

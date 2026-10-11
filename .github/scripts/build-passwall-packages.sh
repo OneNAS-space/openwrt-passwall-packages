@@ -70,9 +70,6 @@ EOF
 
 if [ "$MODE" = "changed" ]; then
   declare -A PKG_MAP
-  PKG_MAP["shadowsocks-libev"]="shadowsocks-libev-ss-local shadowsocks-libev-ss-redir shadowsocks-libev-ss-server"
-  PKG_MAP["shadowsocks-rust"]="shadowsocks-rust-sslocal shadowsocks-rust-ssserver"
-  PKG_MAP["shadowsocksr-libev"]="shadowsocksr-libev-ssr-local shadowsocksr-libev-ssr-redir shadowsocksr-libev-ssr-server"
 
   if [ -n "$CHANGED_DIRS" ]; then
     IFS=',' read -ra DIRS <<< "$CHANGED_DIRS"
@@ -107,16 +104,6 @@ CONFIG_PACKAGE_luci-app-passwall2_Iptables_Transparent_Proxy=y
 CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Haproxy=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_IPv6_Nat=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_NaiveProxy=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Libev_Client=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Libev_Server=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Rust_Client=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Rust_Server=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_ShadowsocksR_Libev_Client=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_ShadowsocksR_Libev_Server=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Simple_Obfs=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_tuic_client=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_V2ray_Plugin=y
 EOF
   make defconfig
 fi
@@ -139,9 +126,7 @@ if [ "$MODE" = "changed" ] && [ -n "$CHANGED_DIRS" ]; then
   done
 else
   PKGS=(
-    chinadns-ng geoview naiveproxy shadowsocks-libev
-    shadowsocks-rust shadowsocksr-libev simple-obfs
-    tcping tuic-client v2ray-plugin
+    chinadns-ng geoview tcping
   )
   for PKG in "${PKGS[@]}"; do
     make package/"$PKG"/{clean,compile} -j"$(nproc)" V=s
